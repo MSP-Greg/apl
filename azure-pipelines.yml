@@ -6,12 +6,14 @@ jobs:
     strategy:
       maxParallel: 5
     steps:
-      - script: |
-          set
+      - script: set
         displayName: set
-      - script: |
-          dir "%ProgramFiles%"
+      - script: dir C:\
+        displayName: dir C:\
+      - script: dir "%ProgramFiles%"
         displayName: dir %ProgramFiles%
       - script: |
           dir "%ProgramFiles(x86)%"
         displayName: dir %ProgramFiles(x86)%
+      - script: dir D:\
+        displayName: dir D:\
