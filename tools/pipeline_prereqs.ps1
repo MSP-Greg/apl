@@ -29,6 +29,7 @@ $wc.DownloadFile($7z_uri, "$drv/depends/$7z_file")
 # parameter for install
 $t = "$drv/7zip".replace('/', '\')
 msiexec.exe /i "$drv\depends\$7z_file" /quiet INSTALLDIR=$t
+dir D:\
 $env:path = "$drv\7zip;$base_path"
 Write-Host "7zip installed"
 
