@@ -28,9 +28,8 @@ $wc.DownloadFile($7z_uri, "$drv/depends/$7z_file")
 # current version of 7zip seems to drop the last character when using the /Directory
 # parameter for install
 $t = "$drv/7zip".replace('/', '\')
-msiexec.exe /i "$drv\depends\$7z_file" /quiet INSTALLDIR=$t
-dir D:\
-$env:path = "$drv\7zip;$base_path"
+msiexec.exe /i "$drv\depends\$7z_file" /quiet INSTALLDIR=`"$t`"
+$env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
 
 #——————————————————————————————————————————————————————————————————————  OpenSSL
@@ -51,4 +50,4 @@ Rename-Item -Path "$drv/$ruby_base-x64" -NewName "$drv/ruby"
 Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
-$path = $env:path
+$env:path = $path
