@@ -1,10 +1,15 @@
 jobs:
-  - job: WhatsHere
+  - job: Ruby_mswin
     timeoutInMinutes: 360
     pool:
       vmImage: vs2015-win2012r2
     strategy:
       maxParallel: 5
+      matrix:
+        vc12:
+          VSVER: 120
+        vc14:
+          VSVER: 140
     steps:
       - script: set
         displayName: set
@@ -17,3 +22,11 @@ jobs:
         displayName: dir %ProgramFiles(x86)%
       - script: dir D:\
         displayName: dir D:\
+      - powershell: ./tools/pipeline_prereqs.ps1
+        displayName: Install prerequisites
+      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
+      - script: \
+          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
+          'cl'
+          echo PWD %CD%
+    
