@@ -27,9 +27,9 @@ New-Item -Path $drv/depends -ItemType Directory 1> $null
 $wc.DownloadFile($7z_uri, "$drv/depends/$7z_file")
 # current version of 7zip seems to drop the last character when using the /Directory
 # parameter for install
-$t = "$drv/7-Zip".replace('/', '\')
+$t = "$drv/7zip".replace('/', '\')
 msiexec.exe /i "$drv\depends\$7z_file" /quiet INSTALLDIR=$t
-$env:path = "$drv\7-Zip;$base_path"
+$env:path = "$drv\7zip;$base_path"
 Write-Host "7zip installed"
 
 #——————————————————————————————————————————————————————————————————————  OpenSSL
