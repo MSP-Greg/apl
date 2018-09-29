@@ -36,8 +36,8 @@ Write-Host "7zip installed"
 #——————————————————————————————————————————————————————————————————————  OpenSSL
 $file = "$drv/depends/$openssl_base$env:VCVER.7z"
 $wc.DownloadFile($openssl_uri, $file)
-$dir = "-o$drv\openssl".replace('/', '\')
-7z.exe x $file -o$drv\openssl 1> $null
+$dir = "-o$drv\openssl"
+7z.exe x $file $dir 1> $null
 Write-Host "OpenSSL installed"
 $env:path = "$drv/openssl/bin;$env:path"
 openssl.exe version
@@ -45,8 +45,8 @@ openssl.exe version
 #—————————————————————————————————————————————————————————————————————————  Ruby
 $file = "$drv/depends/$ruby_base-x64.7z"
 $wc.DownloadFile($ruby_uri, $file)
-# $dir = "-o$drv".replace('/', '\')
-7z.exe x $file -o$drv\ 1> $null
+$dir = "-o$drv\"
+7z.exe x $file $dir 1> $null
 Rename-Item -Path "$drv/$ruby_base-x64" -NewName "$drv/ruby"
 Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
@@ -55,6 +55,7 @@ ruby -v
 #—————————————————————————————————————————————————————————————————————————  zlib
 $file = "$drv/depends/$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
-7z.exe x $file -o$AGENT_BUILDDIRECTORY\ext\zlib
+$dir = "-o$AGENT_BUILDDIRECTORY\ext\zlib"
+7z.exe x $file $dir 1> $null
 
 $env:path = $path
