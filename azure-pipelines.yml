@@ -22,11 +22,12 @@ jobs:
         displayName: dir %ProgramFiles(x86)%
       - script: dir D:\
         displayName: dir D:\
-      - powershell: ./tools/pipeline_prereqs.ps1
-        displayName: Install prerequisites
-      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
-      - script: \
-          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
-          'cl'
-          echo PWD %CD%
+      - script: where.exe 7z
+#      - powershell: ./tools/pipeline_prereqs.ps1
+#        displayName: Install prerequisites
+#      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
+#      - script: \
+#          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
+#          'cl'
+#          echo PWD %CD%
     
