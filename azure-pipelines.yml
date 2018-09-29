@@ -1,5 +1,4 @@
-env:
-  - zlib_version: "1.2.11"
+variables:
   - OPENSSL_DIR=D:\openssl
   - ruby_path=D:\ruby
 jobs:
