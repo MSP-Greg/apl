@@ -15,6 +15,10 @@ $openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_base$env:VC
 $ruby_base = "rubyinstaller-2.5.1-2"
 $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby_base/$ruby_base-x64.7z"
 
+$zlib_file = "zlib1.2.11.zip"
+$zlib_uri  = "https://zlib.net/$zlib_base"
+
+
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $wc  = $(New-Object System.Net.WebClient)
 
@@ -30,22 +34,27 @@ $env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
 
 #——————————————————————————————————————————————————————————————————————  OpenSSL
-$file = "$openssl_base$env:VCVER.7z"
-$wc.DownloadFile($openssl_uri, "$drv/depends/$file")
-
+$file = "$drv/depends/$openssl_base$env:VCVER.7z"
+$wc.DownloadFile($openssl_uri, $file)
 $dir = "-o$drv\openssl".replace('/', '\')
-$file = "$drv/depends/$file"
-7z.exe x $file $dir 1> $null
+7z.exe x $file -o$drv\openssl 1> $null
 Write-Host "OpenSSL installed"
 $env:path = "$drv/openssl/bin;$env:path"
 openssl.exe version
+
 #—————————————————————————————————————————————————————————————————————————  Ruby
 $file = "$drv/depends/$ruby_base-x64.7z"
-$wc.DownloadFile($ruby_uri, "$file")
-$dir = "-o$drv".replace('/', '\')
-7z.exe x $file $dir 1> $null
+$wc.DownloadFile($ruby_uri, $file)
+# $dir = "-o$drv".replace('/', '\')
+7z.exe x $file -o$drv\ 1> $null
 Rename-Item -Path "$drv/$ruby_base-x64" -NewName "$drv/ruby"
 Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
+
+#—————————————————————————————————————————————————————————————————————————  zlib
+$file = "$drv/depends/$zlib_file"
+$wc.DownloadFile($zlib_uri, $file)
+7z.exe x $file -o$AGENT_BUILDDIRECTORY\ext\zlib
+
 $env:path = $path

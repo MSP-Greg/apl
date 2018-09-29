@@ -1,3 +1,7 @@
+env:
+  - zlib_version: "1.2.11"
+  - OPENSSL_DIR=D:\openssl
+  - ruby_path=D:\ruby
 jobs:
   - job: Ruby_mswin
     timeoutInMinutes: 360
@@ -22,4 +26,3 @@ jobs:
           cl
           echo PWD %CD%
         displayName: Select VC Version
-    
