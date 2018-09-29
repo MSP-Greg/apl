@@ -1,6 +1,6 @@
 variables:
-  OPENSSL_DIR=D:\openssl
-  ruby_path=D:\ruby
+  OPENSSL_DIR: D:\openssl
+  ruby_path: D:\ruby
 jobs:
   - job: Ruby_mswin
     timeoutInMinutes: 360
