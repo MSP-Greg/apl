@@ -16,9 +16,9 @@ jobs:
       - powershell: ./tools/pipeline_prereqs.ps1
         displayName: Install prerequisites
       - script: |
-          call set vcvars=%%^VS%VS%COMNTOOLS^%%..\..\VC\vcvarsall.bat
-          set vcvars
-          '"%vcvars%" %Platform:x64=amd64%'
+          set vcvars=%%^VS%VS%COMNTOOLS^%%..\..\VC\vcvarsall.bat
+          echo "%vcvars%" amd64
+          call "%vcvars%" amd64
           cl
           echo PWD %CD%
         displayName: Select VC Version
