@@ -22,7 +22,7 @@ jobs:
         displayName: dir %ProgramFiles(x86)%
       - script: dir D:\
         displayName: dir D:\
-      - script: where.exe 7z
+      - powershell: Get-ChildItem -Path C:\ -Include 7zip -Directory -Recurse -ErrorAction SilentlyContinue | select -expand fullname
 #      - powershell: ./tools/pipeline_prereqs.ps1
 #        displayName: Install prerequisites
 #      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
