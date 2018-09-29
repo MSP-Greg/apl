@@ -22,12 +22,16 @@ jobs:
         displayName: dir %ProgramFiles(x86)%
       - script: dir D:\
         displayName: dir D:\
-      - powershell: Get-ChildItem -Path C:\ -Include 7zip -Directory -Recurse -ErrorAction SilentlyContinue | select -expand fullname
-#      - powershell: ./tools/pipeline_prereqs.ps1
-#        displayName: Install prerequisites
-#      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
-#      - script: \
-#          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
-#          'cl'
-#          echo PWD %CD%
+      - script: dir C:\Packages
+        displayName: dir C:\Packages
+      - script: dir C:\Resources
+        displayName: dir C:\Resources
+      - powershell: ./tools/pipeline_prereqs.ps1
+        displayName: Install prerequisites
+      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
+      - script: \
+          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
+          'cl'
+          echo PWD %CD%
+        displayName: Select VC Version
     

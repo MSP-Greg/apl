@@ -6,8 +6,8 @@ $base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
 
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
-$7z_file = "7z1805-x64.msi"
-$7z_uri  = "https://www.7-zip.org/a/$7z_file"
+$7z_file = "7zip_ci.zip"
+$7z_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/7zip_ci.zip"
 
 $openssl_base = "openssl-1.1.1_vc"
 $openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_base$env:VCVER.7z"
@@ -25,10 +25,7 @@ New-Item -Path $drv/depends -ItemType Directory 1> $null
 
 #—————————————————————————————————————————————————————————————————————————  7Zip
 $wc.DownloadFile($7z_uri, "$drv/depends/$7z_file")
-# current version of 7zip seems to drop the last character when using the /Directory
-# parameter for install
-$t = "$drv/7zip".replace('/', '\')
-msiexec.exe /i "$drv\depends\$7z_file" /quiet INSTALLDIR=`"$t`"
+Expand-Archive -Path "$drv/depends/$7z_file" -DestinationPath "$drv/7zip"
 $env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
 
