@@ -7,18 +7,19 @@ jobs:
       maxParallel: 5
       matrix:
         vc12:
-          VSVER: 120
+          vs: 120
         vc14:
-          VSVER: 140
+          vs: 140
     steps:
       - script: set
         displayName: set
       - powershell: ./tools/pipeline_prereqs.ps1
         displayName: Install prerequisites
-      - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
       - script: |
-          call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
-          'cl'
+          call set vcvars=%%^VS%VS%COMNTOOLS^%%..\..\VC\vcvarsall.bat
+          set vcvars
+          '"%vcvars%" %Platform:x64=amd64%'
+          cl
           echo PWD %CD%
         displayName: Select VC Version
     
