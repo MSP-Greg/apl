@@ -15,8 +15,9 @@ $openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_base$env:VC
 $ruby_base = "rubyinstaller-2.5.1-2"
 $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby_base/$ruby_base-x64.7z"
 
-$zlib_file = "zlib1.2.11.zip"
+$zlib_file = "zlib1211.zip"
 $zlib_uri  = "https://zlib.net/$zlib_file"
+
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $wc  = $(New-Object System.Net.WebClient)
