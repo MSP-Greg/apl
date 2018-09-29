@@ -37,7 +37,8 @@ $dir = "-o$drv\openssl".replace('/', '\')
 $file = "$drv/depends/$file"
 7z.exe x $file $dir 1> $null
 Write-Host "OpenSSL installed"
-
+$env:path = "$drv/openssl/bin;$env:path"
+openssl.exe version
 #—————————————————————————————————————————————————————————————————————————  Ruby
 $file = "$drv/depends/$ruby_base-x64.7z"
 $wc.DownloadFile($ruby_uri, "$file")

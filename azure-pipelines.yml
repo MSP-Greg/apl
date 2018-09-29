@@ -13,23 +13,10 @@ jobs:
     steps:
       - script: set
         displayName: set
-      - script: dir C:\
-        displayName: dir C:\
-      - script: dir "%ProgramFiles%"
-        displayName: dir %ProgramFiles%
-      - script: |
-          dir "%ProgramFiles(x86)%"
-        displayName: dir %ProgramFiles(x86)%
-      - script: dir D:\
-        displayName: dir D:\
-      - script: dir C:\Packages
-        displayName: dir C:\Packages
-      - script: dir C:\Resources
-        displayName: dir C:\Resources
       - powershell: ./tools/pipeline_prereqs.ps1
         displayName: Install prerequisites
       - powershell: $env:VSCOMNTOOLS=(Get-Content ("env:VS" + "$env:VSVER" + "COMNTOOLS"))
-      - script: \
+      - script: |
           call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
           'cl'
           echo PWD %CD%
