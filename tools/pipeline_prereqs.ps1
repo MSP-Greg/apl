@@ -16,8 +16,7 @@ $ruby_base = "rubyinstaller-2.5.1-2"
 $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby_base/$ruby_base-x64.7z"
 
 $zlib_file = "zlib1.2.11.zip"
-$zlib_uri  = "https://zlib.net/$zlib_base"
-
+$zlib_uri  = "https://zlib.net/$zlib_file"
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $wc  = $(New-Object System.Net.WebClient)
@@ -56,6 +55,6 @@ ruby -v
 $file = "$drv/depends/$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
 $dir = "-o$AGENT_BUILDDIRECTORY\ext\zlib"
-7z.exe x $file $dir 1> $null
+Expand-Archive -Path $file -DestinationPath $dir
 
 $env:path = $path
