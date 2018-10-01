@@ -81,17 +81,15 @@ $pre = "mingw-w64-x86_64-"
 $tools =  "___gdbm ___gmp ___ncurses ___openssl ___readline".replace('___', $pre)
 
 bash.exe -c `"pacman-key --init`"
-bash.exe -c `"pacman-key --populate msys2`"
-bash.exe -c `"pacman-key --refresh-keys`"
+bash.exe -c `"pacman-key --populate msys2 ; pacman-key --refresh-keys`"
 
 Write-Host "------------------------------------------------------------------  pacman.exe -Syu"
-try   { pacman.exe -Syu 2> $null }
-catch {}
-Write-Host "------------------------------------------------------------------  pacman.exe -Syu"
-try   { pacman.exe -Su  2> $null }
-catch {}
+try   { pacman.exe -Syu --noconfirm --needed --noprogressbar 2> $null } catch {}
+Write-Host "------------------------------------------------------------------  pacman.exe -Su #1"
+try   { pacman.exe -Su  --noconfirm --needed --noprogressbar 2> $null } catch {}
+
 Write-Host "------------------------------------------------------------------  pacman.exe -S base-devel"
-try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel    2> $null }
+try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel 2> $null }
 catch {}
 Write-Host "------------------------------------------------------------------  pacman.exe -S toolchain"
 try   { pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null }
