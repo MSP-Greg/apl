@@ -80,7 +80,10 @@ $env:path =  "$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 $pre = "mingw-w64-x86_64-"
 $tools =  "___gdbm ___gmp ___ncurses ___openssl ___readline".replace('___', $pre)
 
-bash.exe -c `"pacman-key --init`"
+bash.exe -c pacman-key --init
+bash.exe -c pacman-key --populate msys2
+bash.exe -c pacman-key --refresh-keys
+
 pacman.exe -Syu 2> $null
 pacman.exe -Su  2> $null
 pacman.exe -S --noconfirm --needed --noprogressbar base-devel            2> $null
