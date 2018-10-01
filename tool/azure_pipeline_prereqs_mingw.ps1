@@ -51,10 +51,10 @@ $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
 
 #—————————————————————————————————————————————————————————————————————————  zlib
-$file = "$dl_path/$zlib_file"
+$file = "$dl_path\$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
-$dir = "-o$src\ext\zlib"
-Expand-Archive -Path $file -DestinationPath $dir
+# GJL $dir = "-o$src\ext\zlib"
+# Expand-Archive -Path $file -DestinationPath $dir
 
 #——————————————————————————————————————————————————————————————————  MSYS2/MinGW
 # updated 2018-10-01
@@ -64,6 +64,7 @@ $msys2_uri = "http://repo.msys2.org/distrib/x86_64"
 $dir1 = "-o$dl_path"
 $dir2 = "-o$drv\msys64"
 
+Write-Host "Downloading $file"
 $fp = "$dl_path\$file" + ".xz"
 $uri = "$msys2_uri/$file" + ".xz"
 $wc.DownloadFile($uri, $fp)
@@ -97,7 +98,7 @@ $t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
-New-Item -Path $drv\git -ItemType Junction -Value $env:ProgramFiles\Git 1> $null
+New-Item -Path "$drv\git" -ItemType Junction -Value "$env:ProgramFiles\Git" 1> $null
 echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
 
 # set variable SRC
