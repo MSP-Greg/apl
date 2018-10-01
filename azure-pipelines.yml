@@ -1,27 +1,19 @@
 variables:
-  OPENSSL_DIR: D:\openssl
-  ruby_path: D:\ruby
+  BASERUBY:       # full path to ruby.exe
+  BUILD_PATH:     # PATH string with prereqs added
+  GIT:            # full path to git.exe, uses 'no space' link
+  OPENSSL_DIR:    # 
+  SRC:            # source/repo directory
+  VC_VARS:        # full path to correct vcvarsall.bat file
 jobs:
-  - job: Ruby_mswin
-    timeoutInMinutes: 360
+  - job: Ruby_mingw
+    timeoutInMinutes: 60
     pool:
       vmImage: vs2015-win2012r2
     strategy:
       maxParallel: 5
-      matrix:
-        vc12:
-          vs: 120
-        vc14:
-          vs: 140
     steps:
       - script: set
         displayName: set
-      - powershell: ./tools/pipeline_prereqs.ps1
+      - powershell: ./tool/azure_pipeline_prereqs_mingw.ps1
         displayName: Install prerequisites
-      - script: |
-          set vcvars=%%^VS%VS%COMNTOOLS^%%..\..\VC\vcvarsall.bat
-          echo "%vcvars%" amd64
-          call "%vcvars%" amd64
-          cl
-          echo PWD %CD%
-        displayName: Select VC Version
