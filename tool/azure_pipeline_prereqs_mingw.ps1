@@ -23,13 +23,12 @@ $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby
 $zlib_file = "zlib1211.zip"
 $zlib_uri  = "https://zlib.net/$zlib_file"
 
-
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $wc  = $(New-Object System.Net.WebClient)
 
 $drv = (get-location).Drive.Name + ":"
 
-$dl_path = "$drv/prereq"
+$dl_path = "$drv\prereq"
 
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
@@ -59,7 +58,7 @@ Expand-Archive -Path $file -DestinationPath $dir
 
 #——————————————————————————————————————————————————————————————————  MSYS2/MinGW
 # updated 2018-10-01
-$file      = "msys2-base-x86_64-20180531.tar.xz"
+$file      = "msys2-base-x86_64-20180531.tar"
 $msys2_uri = "http://repo.msys2.org/distrib/x86_64"
 
 $dir1 = "-o$dl_path"
@@ -73,14 +72,12 @@ Write-Host "Processing $file"
 $fp = "$dl_path/$file"
 $dir2 = "-o$drv"
 7z.exe x $fp $dir2 1> $null
-Remove-Item $$dl_path\*.*
-
-dir $drv\msys64
+Remove-Item $dl_path\*.*
 
 $env:path =  "$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 
 $pre = "mingw-w64-x86_64-"
-$tools =  "___gdbm ___gmp ___ncurses ___readline".replace('___', $pre)
+$tools =  "___gdbm ___gmp ___ncurses ___openssl ___readline".replace('___', $pre)
 
 pacman.exe -Syu 2> $null
 pacman.exe -Su  2> $null
