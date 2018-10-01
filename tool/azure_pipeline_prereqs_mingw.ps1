@@ -84,13 +84,18 @@ bash.exe -c `"pacman-key --init`"
 bash.exe -c `"pacman-key --populate msys2`"
 bash.exe -c `"pacman-key --refresh-keys`"
 
-Write-Host "pacman.exe -Syu"
-try   { Write-Host "pacman.exe -Syu" }
+Write-Host "------------------------------------------------------------------  pacman.exe -Syu"
+try   { pacman.exe -Syu 2> $null }
 catch {}
-Write-Host "pacman.exe -Su"
-pacman.exe -Su 2> $null
-pacman.exe -S --noconfirm --needed --noprogressbar base-devel            2> $null
+Write-Host "------------------------------------------------------------------  pacman.exe -Syu"
+try   { pacman.exe -Su  2> $null }
+catch {}
+Write-Host "------------------------------------------------------------------  pacman.exe -S base-devel"
+try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel            2> $null
+catch {}
+Write-Host "------------------------------------------------------------------  pacman.exe -S toolchain"
 pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null
+Write-Host "------------------------------------------------------------------  pacman.exe -S ruby depends"
 pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ')     2> $null
 
 $env:path = $path
