@@ -91,13 +91,14 @@ Write-Host "------------------------------------------------------------------  
 try   { pacman.exe -Su  2> $null }
 catch {}
 Write-Host "------------------------------------------------------------------  pacman.exe -S base-devel"
-try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel            2> $null
+try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel    2> $null }
 catch {}
 Write-Host "------------------------------------------------------------------  pacman.exe -S toolchain"
-pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null
+try   { pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null }
+catch {}
 Write-Host "------------------------------------------------------------------  pacman.exe -S ruby depends"
-pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ')     2> $null
-
+try   { pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ') 2> $null }
+catch {}
 $env:path = $path
 
 #————————————————————————————————————————————————————————————————————————  Setup
