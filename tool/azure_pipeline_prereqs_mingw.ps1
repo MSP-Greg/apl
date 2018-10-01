@@ -84,8 +84,11 @@ bash.exe -c `"pacman-key --init`"
 bash.exe -c `"pacman-key --populate msys2`"
 bash.exe -c `"pacman-key --refresh-keys`"
 
-pacman.exe -Syu 2> $null
-pacman.exe -Su  2> $null
+Write-Host "pacman.exe -Syu"
+try   { Write-Host "pacman.exe -Syu" }
+catch {}
+Write-Host "pacman.exe -Su"
+pacman.exe -Su 2> $null
 pacman.exe -S --noconfirm --needed --noprogressbar base-devel            2> $null
 pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null
 pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ')     2> $null
