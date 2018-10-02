@@ -27,9 +27,10 @@ jobs:
         displayName: set
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
         displayName: Install prerequisites
+        continueOnError: true
       - powershell: |
           dir D:\msys64\usr\bin
-          Write-Host -----------------------------------------------------------------
+          Write-Host "-----------------------------------------------------------------"
           Write-Host $env:path.substring(0,100)
           Write-Host "BASERUBY     $env:BASERUBY"
           Write-Host "BUILD_PATH:  "$env:BUILD_PATH.substring(0,100)

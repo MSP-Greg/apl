@@ -15,8 +15,9 @@ if ( !(Test-Path -Path $VSCOMNTOOLS -PathType Leaf) ) {
   exit 1
 }
 
-$cd = $pwd
+$cd   = $pwd
 $path = $env:path
+$src  = $env:BUILD_SOURCESDIRECTORY
 
 $base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
 
@@ -96,16 +97,18 @@ foreach ($file in $files) {
   $fp = "$dl_path\$file" + ".xz"
   $uri = "$msys2_uri/$file" + ".xz"
   $wc.DownloadFile($uri, $fp)
-  Write-Host "Processing $file"
+  Write-Host "$file downloaded"
   7z.exe x $fp $dir1 1> $null
+  Write-Host "$file upzip to tar"
   $fp = "$dl_path/$file"
   7z.exe x $fp $dir2 1> $null
+  Write-Host "$file upzip tar"
 }
 
 #—————————————————————————————————————————————————————————————————————————  zlib
 $file = "$dl_path/$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
-$dir = "-o$env:BUILD_SOURCESDIRECTORY\ext\zlib"
+$dir = "$src\ext\zlib"
 Expand-Archive -Path $file -DestinationPath $dir
 
 $env:path = $path
@@ -130,7 +133,7 @@ echo "##vso[task.setvariable variable=JOBS]$env:NUMBER_OF_PROCESSORS"
 echo "##vso[task.setvariable variable=OPENSSL_DIR]$drv\openssl"
 
 # set variable SRC
-echo "##vso[task.setvariable variable=SRC]$env:BUILD_SOURCESDIRECTORY"
+echo "##vso[task.setvariable variable=SRC]$src"
 
 # set variable VC_VARS to the bat file
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"
