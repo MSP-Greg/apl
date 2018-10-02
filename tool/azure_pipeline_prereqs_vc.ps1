@@ -96,13 +96,11 @@ $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
          "gperf-3.1-1-x86_64.pkg.tar",
          "sed-4.5-1-x86_64.pkg.tar"
 
-$wc.BaseAddress = $msys2_uri
 foreach ($file in $files) {
   $fp = "$dl_path\$file" + ".xz"
-  $uri = "$file" + ".xz"
+  $uri = "$msys2_uri/$file" + ".xz"
   $wc.DownloadFile($uri, $fp)
 }
-$wc.BaseAddress = ''
 
 $dir1 = "-o$dl_path"
 $dir2 = "-o$drv\msys64"
