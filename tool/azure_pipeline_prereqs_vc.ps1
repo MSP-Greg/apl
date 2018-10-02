@@ -97,15 +97,16 @@ $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
          "sed-4.5-1-x86_64.pkg.tar"
 
 foreach ($file in $files) {
-  $fp = "$dl_path\$file" + ".xz"
+  $fp = "$dl_path/$file" + ".xz"
   $uri = "$msys2_uri/$file" + ".xz"
   $wc.DownloadFile($uri, $fp)
 }
 
 $dir1 = "-o$dl_path"
-$dir2 = "-o$drv\msys64"
+$dir2 = "-o$drv/msys64"
 
 foreach ($file in $files) {
+  $fp = "$dl_path/$file" + ".xz"
   7z.exe x $fp $dir1 1> $null
   Write-Host "$file upzip to tar"
   $fp = "$dl_path/$file"
