@@ -24,9 +24,9 @@ jobs:
           Platform: x64
     steps:
       - script: set
-        displayName: set
+        displayName: $(AGENT_JOBNAME) set
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: Install prerequisites
+        displayName: $(AGENT_JOBNAME) Install prerequisites
         continueOnError: true
       - powershell: |
           dir D:\msys64\usr\bin

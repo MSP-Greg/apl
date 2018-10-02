@@ -3,7 +3,7 @@ Code by MSP-Greg
 Azure Pipeline vc build 'Build variable' setup and prerequisite install items:
 7zip, OpenSSL, zlib, bison, gperf, and sed
 #>
-
+<#
 #—————————————————————————————————————————————————————————  Check for VC version
 $p_temp = (Get-Content ("env:VS" + "$env:VS" + "COMNTOOLS"))
 $p_temp += "..\..\VC\vcvarsall.bat"
@@ -14,10 +14,10 @@ if ( !(Test-Path -Path $VSCOMNTOOLS -PathType Leaf) ) {
   Write-Host "Please install or select another version of VS/VC."
   exit 1
 }
-
+$src  = $env:BUILD_SOURCESDIRECTORY
+#>
 $cd   = $pwd
 $path = $env:path
-$src  = $env:BUILD_SOURCESDIRECTORY
 
 $base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
 
@@ -48,6 +48,7 @@ $msys2_uri  = "http://repo.msys2.org/msys/x86_64"
 $wc  = $(New-Object System.Net.WebClient)
 
 $drv = (get-location).Drive.Name + ":"
+$drv = "C:\Greg\temp"
 
 $dl_path = "$drv/prereq"
 
@@ -59,7 +60,7 @@ $wc.DownloadFile($7z_uri, "$dl_path/$7z_file")
 Expand-Archive -Path "$dl_path/$7z_file" -DestinationPath "$drv/7zip"
 $env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
-
+<#
 #——————————————————————————————————————————————————————————————————————  OpenSSL
 $fp = "$dl_path/$openssl_file"
 $wc.DownloadFile($openssl_uri, $fp)
@@ -85,7 +86,7 @@ $file = "$dl_path/$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
 $dir = "$src\ext\zlib"
 Expand-Archive -Path $file -DestinationPath $dir
-
+#>
 #————————————————————————————————————————————————————————————  bison, gperf, sed
 # updated 2018-10-01
 $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
@@ -108,16 +109,15 @@ $dir2 = "-o$drv/msys64"
 foreach ($file in $files) {
   $fp = "$dl_path/$file" + ".xz"
   7z.exe x $fp $dir1 1> $null
-  Write-Host "$file upzip to tar"
   $fp = "$dl_path/$file"
-  7z.exe x $fp $dir2 1> $null
+  7z.exe x $fp $dir2 -ttar -aoa 1> $null
   Write-Host "$file upzip tar"
 }
 
 #————————————————————————————————————————————————————————————————————————  Setup
 
 $env:path = $path
-
+<#
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
@@ -140,3 +140,4 @@ echo "##vso[task.setvariable variable=SRC]$src"
 
 # set variable VC_VARS to the bat file
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"
+#>
