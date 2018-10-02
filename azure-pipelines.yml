@@ -13,6 +13,15 @@ jobs:
       vmImage: vs2015-win2012r2
     strategy:
       maxParallel: 5
+      matrix:
+        vc12-x64:
+          vs: 120
+          VCVARS_PLATFORM: amd64
+          Platform: x64
+        vc14-x64:
+          vs: 140
+          VCVARS_PLATFORM: amd64
+          Platform: x64
     steps:
       - script: set
         displayName: set
