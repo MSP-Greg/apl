@@ -117,7 +117,7 @@ foreach ($file in $files) {
 #————————————————————————————————————————————————————————————————————————  Setup
 
 $env:path = $path
-<#
+
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
@@ -140,4 +140,6 @@ echo "##vso[task.setvariable variable=SRC]$src"
 
 # set variable VC_VARS to the bat file
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"
-#>
+
+# set variable DISPLAY_PRE
+echo "##vso[task.setvariable variable=DISPLAY_PRE]$env:AGENT_JOBNAME"
