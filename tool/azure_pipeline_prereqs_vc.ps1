@@ -80,6 +80,12 @@ Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
 
+#—————————————————————————————————————————————————————————————————————————  zlib
+$file = "$dl_path/$zlib_file"
+$wc.DownloadFile($zlib_uri, $file)
+$dir = "$src\ext\zlib"
+Expand-Archive -Path $file -DestinationPath $dir
+
 #————————————————————————————————————————————————————————————  bison, gperf, sed
 # updated 2018-10-01
 $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
@@ -90,14 +96,18 @@ $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
          "gperf-3.1-1-x86_64.pkg.tar",
          "sed-4.5-1-x86_64.pkg.tar"
 
+$wc.BaseAddress = $msys2_uri
+foreach ($file in $files) {
+  $fp = "$dl_path\$file" + ".xz"
+  $uri = "$file" + ".xz"
+  $wc.DownloadFile($uri, $fp)
+}
+$wc.BaseAddress = ''
+
 $dir1 = "-o$dl_path"
 $dir2 = "-o$drv\msys64"
 
 foreach ($file in $files) {
-  $fp = "$dl_path\$file" + ".xz"
-  $uri = "$msys2_uri/$file" + ".xz"
-  $wc.DownloadFile($uri, $fp)
-  Write-Host "$file downloaded"
   7z.exe x $fp $dir1 1> $null
   Write-Host "$file upzip to tar"
   $fp = "$dl_path/$file"
@@ -105,21 +115,15 @@ foreach ($file in $files) {
   Write-Host "$file upzip tar"
 }
 
-#—————————————————————————————————————————————————————————————————————————  zlib
-$file = "$dl_path/$zlib_file"
-$wc.DownloadFile($zlib_uri, $file)
-$dir = "$src\ext\zlib"
-Expand-Archive -Path $file -DestinationPath $dir
+#————————————————————————————————————————————————————————————————————————  Setup
 
 $env:path = $path
-
-#————————————————————————————————————————————————————————————————————————  Setup
 
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
 # set variable BUILD_PATH used in each step
-$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
