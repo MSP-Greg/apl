@@ -1,12 +1,13 @@
-variables:
-  BASERUBY:       # full path to ruby.exe
-  BUILD_PATH:     # PATH string with prereqs added
-  GIT:            # full path to git.exe, uses 'no space' link
-  OPENSSL_DIR:    # 
-  SRC:            # source/repo directory
-  VC_VARS:        # full path to correct vcvarsall.bat file
 jobs:
-  - job: Ruby_mingw
+  - job: Ruby_mswin
+    variables:        # Build variables are set in azure_pipeline_prereqs_*.ps1
+      BASERUBY:       # full path to ruby.exe
+      BUILD_PATH:     # PATH string with prereqs added
+      GIT:            # full path to git.exe, uses 'no space' link
+      JOBS:           # NUMBER_OF_PROCESSORS
+      OPENSSL_DIR:    #
+      SRC:            # source/repo directory
+      VC_VARS:        # full path to correct vcvarsall.bat file
     timeoutInMinutes: 60
     pool:
       vmImage: vs2015-win2012r2
@@ -15,5 +16,16 @@ jobs:
     steps:
       - script: set
         displayName: set
-      - powershell: ./tool/azure_pipeline_prereqs_mingw.ps1
+      - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
         displayName: Install prerequisites
+      - powershell: |
+          dir D:\msys64\usr\bin
+          Write-Host -----------------------------------------------------------------
+          Write-Host $env:path.substring(0,100)
+          Write-Host "BASERUBY     $env:BASERUBY"
+          Write-Host "BUILD_PATH:  "$env:BUILD_PATH.substring(0,100)
+          Write-Host "GIT:         $env:GIT"
+          Write-Host "JOBS:        $env:JOBS"
+          Write-Host "OPENSSL_DIR: $env:OPENSSL_DIR"
+          Write-Host "SRC:         $env:SRC"
+          Write-Host "VC_VARS:     $env:VC_VARS"

@@ -77,7 +77,15 @@ Remove-Item $dl_path\*.*
 
 $env:path =  "$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 
-$pre = "mingw-w64-x86_64-"
+if ($env:PLATFORM -eq 'x64') {
+  $march = "x86-64" ; $carch = "x86_64" ; $rarch = "x64-mingw32"  ; $mingw = "mingw64"
+} else {
+  $march = "i686"   ; $carch = "i686"   ; $rarch = "i386-mingw32" ; $mingw = "mingw32"
+}
+$chost   = "$carch-w64-mingw32"
+
+$pre = "mingw-w64-$carch-"
+
 $tools =  "___gdbm ___gmp ___ncurses ___openssl ___readline".replace('___', $pre)
 
 bash.exe -c `"pacman-key --init`"
@@ -98,20 +106,37 @@ catch {}
 Write-Host "------------------------------------------------------------------  pacman.exe -S ruby depends"
 try   { pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ') 2> $null }
 catch {}
+
+# $t = $pre + "libffi" ; pacman -Rdd --noconfirm $t
+# $t = $pre + "zlib"   ; pacman -Rdd --noconfirm $t
+
 $env:path = $path
 
-#————————————————————————————————————————————————————————————————————————  Setup
+#——————————————————————————————————————————————————————————  Setup Job Variables
 
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
 # set variable BUILD_PATH used in each step
-$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
 New-Item -Path "$drv\git" -ItemType Junction -Value "$env:ProgramFiles\Git" 1> $null
 echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
+
+# set variable CHOST
+echo "##vso[task.setvariable variable=CHOST]$chost"
+
+# set variable JOBS
+echo "##vso[task.setvariable variable=JOBS]$env:NUMBER_OF_PROCESSORS"
+
+# set variable MARCH
+echo "##vso[task.setvariable variable=MARCH]$march"
+
+# set variable MSYSTEM
+$t = $mingw.ToUpper()
+echo "##vso[task.setvariable variable=MSYSTEM]$t"
 
 # set variable SRC
 echo "##vso[task.setvariable variable=SRC]$src"
