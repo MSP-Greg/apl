@@ -3,7 +3,7 @@ Code by MSP-Greg
 Azure Pipeline vc build 'Build variable' setup and prerequisite install items:
 7zip, OpenSSL, zlib, bison, gperf, and sed
 #>
-<#
+
 #—————————————————————————————————————————————————————————  Check for VC version
 $p_temp = (Get-Content ("env:VS" + "$env:VS" + "COMNTOOLS"))
 $p_temp += "..\..\VC\vcvarsall.bat"
@@ -14,10 +14,10 @@ if ( !(Test-Path -Path $VSCOMNTOOLS -PathType Leaf) ) {
   Write-Host "Please install or select another version of VS/VC."
   exit 1
 }
-$src  = $env:BUILD_SOURCESDIRECTORY
-#>
+
 $cd   = $pwd
 $path = $env:path
+$src  = $env:BUILD_SOURCESDIRECTORY
 
 $base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
 
@@ -48,19 +48,23 @@ $msys2_uri  = "http://repo.msys2.org/msys/x86_64"
 $wc  = $(New-Object System.Net.WebClient)
 
 $drv = (get-location).Drive.Name + ":"
-$drv = "C:\Greg\temp"
 
 $dl_path = "$drv/prereq"
 
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
 
+# make a temp folder on $drv
+$tmpdir = "$drv\temp"
+New-Item  -Path $tmpdir -ItemType Directory 1> $null
+(Get-Item -Path $tmpdir).Attributes = 'Normal'
+
 #—————————————————————————————————————————————————————————————————————————  7Zip
 $wc.DownloadFile($7z_uri, "$dl_path/$7z_file")
 Expand-Archive -Path "$dl_path/$7z_file" -DestinationPath "$drv/7zip"
 $env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
-<#
+
 #——————————————————————————————————————————————————————————————————————  OpenSSL
 $fp = "$dl_path/$openssl_file"
 $wc.DownloadFile($openssl_uri, $fp)
@@ -81,48 +85,46 @@ Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
 
-#—————————————————————————————————————————————————————————————————————————  zlib
-$file = "$dl_path/$zlib_file"
-$wc.DownloadFile($zlib_uri, $file)
-$dir = "$src\ext\zlib"
-Expand-Archive -Path $file -DestinationPath $dir
-#>
 #————————————————————————————————————————————————————————————  bison, gperf, sed
 # updated 2018-10-01
 $files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
          "gcc-libs-7.3.0-3-x86_64.pkg.tar",
          "libintl-0.19.8.1-1-x86_64.pkg.tar",
          "libiconv-1.15-1-x86_64.pkg.tar",
+         "bash-4.4.019-3-x86_64.pkg.tar",
          "bison-3.0.5-1-x86_64.pkg.tar",
          "gperf-3.1-1-x86_64.pkg.tar",
+         "m4-1.4.18-2-x86_64.pkg.tar",
          "sed-4.5-1-x86_64.pkg.tar"
 
+$dir1 = "-o$dl_path"
+$dir2 = "-o$drv\msys64"
+
 foreach ($file in $files) {
-  $fp = "$dl_path/$file" + ".xz"
+  $fp = "$dl_path\$file" + ".xz"
   $uri = "$msys2_uri/$file" + ".xz"
   $wc.DownloadFile($uri, $fp)
-}
-
-$dir1 = "-o$dl_path"
-$dir2 = "-o$drv/msys64"
-
-foreach ($file in $files) {
-  $fp = "$dl_path/$file" + ".xz"
+  Write-Host "Processing $file"
   7z.exe x $fp $dir1 1> $null
   $fp = "$dl_path/$file"
   7z.exe x $fp $dir2 -ttar -aoa 1> $null
-  Write-Host "$file upzip tar"
 }
 
-#————————————————————————————————————————————————————————————————————————  Setup
+#—————————————————————————————————————————————————————————————————————————  zlib
+$file = "$dl_path/$zlib_file"
+$wc.DownloadFile($zlib_uri, $file)
+$dir = "$src\ext\zlib"
+Expand-Archive -Path $file -DestinationPath $dir
 
 $env:path = $path
+
+#————————————————————————————————————————————————————————————————————————  Setup
 
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
 # set variable BUILD_PATH used in each step
-$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$path"
+$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
@@ -137,6 +139,9 @@ echo "##vso[task.setvariable variable=OPENSSL_DIR]$drv\openssl"
 
 # set variable SRC
 echo "##vso[task.setvariable variable=SRC]$src"
+
+# set variable TMPDIR
+echo "##vso[task.setvariable variable=TMPDIR]$tmpdir"
 
 # set variable VC_VARS to the bat file
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"

@@ -34,9 +34,11 @@ jobs:
           Write-Host "-----------------------------------------------------------------"
           Write-Host $env:path.substring(0,100)
           Write-Host "BASERUBY     $env:BASERUBY"
+          Write-Host "BASERUBY     $env:BASERUBY"
           Write-Host "BUILD_PATH:  "$env:BUILD_PATH.substring(0,100)
           Write-Host "GIT:         $env:GIT"
           Write-Host "JOBS:        $env:JOBS"
           Write-Host "OPENSSL_DIR: $env:OPENSSL_DIR"
           Write-Host "SRC:         $env:SRC"
           Write-Host "VC_VARS:     $env:VC_VARS"
+          Write-Host "DISPLAY_PRE: $env:DISPLAY_PRE"
