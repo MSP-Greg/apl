@@ -24,11 +24,11 @@ jobs:
           VCVARS_PLATFORM: amd64
           Platform: x64
     steps:
-      - script: set
-        displayName: $(DISPLAY_PRE) set
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(DISPLAY_PRE) Install prerequisites
+        displayName: $(Agent.JobName) Install prerequisites
         continueOnError: true
+      - script: set
+        displayName: $(Agent.JobName) set
       - powershell: |
           dir D:\msys64\usr\bin
           Write-Host "-----------------------------------------------------------------"
