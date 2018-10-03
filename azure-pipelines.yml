@@ -1,4 +1,4 @@
-variable:
+variables:
   JobName:            # Display item for step displayName
 jobs:
   - job: Ruby_mswin
