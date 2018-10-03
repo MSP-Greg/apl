@@ -25,10 +25,10 @@ jobs:
           Platform: x64
     steps:
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(Agent.JobName) Install prerequisites
+        displayName: $(Job.Name) Install prerequisites
         continueOnError: true
       - script: set
-        displayName: $(Agent.JobName) set
+        displayName: $(Job.Name) set
       - powershell: |
           dir D:\msys64\usr\bin
           Write-Host "-----------------------------------------------------------------"
