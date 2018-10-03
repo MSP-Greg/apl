@@ -1,3 +1,5 @@
+variable:
+  JobName:            # Display item for step displayName
 jobs:
   - job: Ruby_mswin
     variables:        # Build variables are set in azure_pipeline_prereqs_*.ps1
@@ -8,7 +10,6 @@ jobs:
       OPENSSL_DIR:    #
       SRC:            # source/repo directory
       VC_VARS:        # full path to correct vcvarsall.bat file
-      JobName:        # Display prefix for step displayName
     timeoutInMinutes: 60
     pool:
       vmImage: vs2015-win2012r2
@@ -41,4 +42,4 @@ jobs:
           Write-Host "OPENSSL_DIR: $env:OPENSSL_DIR"
           Write-Host "SRC:         $env:SRC"
           Write-Host "VC_VARS:     $env:VC_VARS"
-          Write-Host "DISPLAY_PRE: $env:DISPLAY_PRE"
+          Write-Host "JobName:     $env:JOBNAME"

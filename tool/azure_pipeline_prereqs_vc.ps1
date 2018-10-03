@@ -147,4 +147,4 @@ echo "##vso[task.setvariable variable=TMPDIR]$tmpdir"
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"
 
 # set variable DISPLAY_PRE
-echo "##vso[task.setvariable variable=JobName]$env:AGENT_JOBNAME"
+echo "##vso[task.setvariable variable=JobName;isOutput=true]$env:AGENT_JOBNAME"
