@@ -1,5 +1,3 @@
-variables:
-  JobName:            # Display item for step displayName
 jobs:
   - job: Ruby_mswin
     variables:        # Build variables are set in azure_pipeline_prereqs_*.ps1
@@ -26,20 +24,21 @@ jobs:
           Platform: x64
     steps:
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(JobName) Install prerequisites
+        displayName: System.JobName $(System.JobName) System.JobDisplayName  $(System.JobDisplayName) Install prerequisites
         continueOnError: true
       - script: set
-        displayName: $(JobName) set
+        displayName: Agent.JobName $(Agent.JobName) set
       - powershell: |
           dir D:\msys64\usr\bin
           Write-Host "-----------------------------------------------------------------"
           Write-Host $env:path.substring(0,100)
-          Write-Host "BASERUBY     $env:BASERUBY"
-          Write-Host "BASERUBY     $env:BASERUBY"
+          Write-Host "BASERUBY      $env:BASERUBY"
+          Write-Host "BASERUBY      $env:BASERUBY"
           Write-Host "BUILD_PATH:  "$env:BUILD_PATH.substring(0,100)
-          Write-Host "GIT:         $env:GIT"
-          Write-Host "JOBS:        $env:JOBS"
-          Write-Host "OPENSSL_DIR: $env:OPENSSL_DIR"
-          Write-Host "SRC:         $env:SRC"
-          Write-Host "VC_VARS:     $env:VC_VARS"
-          Write-Host "JobName:     $env:JOBNAME"
+          Write-Host "GIT:          $env:GIT"
+          Write-Host "JOBS:         $env:JOBS"
+          Write-Host "OPENSSL_DIR:  $env:OPENSSL_DIR"
+          Write-Host "SRC:          $env:SRC"
+          Write-Host "VC_VARS:      $env:VC_VARS"
+          Write-Host "JobName:      $env:JOBNAME"
+          Write-Host "AGENT_JOBNAME $env:AGENT_JOBNAME"
