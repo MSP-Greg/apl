@@ -54,10 +54,14 @@ $dl_path = "$drv/prereq"
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
 
+
+
+
 # make a temp folder on $drv
-$tmpdir = "$drv\temp"
-New-Item  -Path $tmpdir -ItemType Directory 1> $null
-(Get-Item -Path $tmpdir).Attributes = 'Normal'
+$tmpdir_w = "$drv\temp"
+$tmpdir   = "$drv/temp"
+New-Item  -Path $tmpdir_w -ItemType Directory 1> $null
+(Get-Item -Path $tmpdir_w).Attributes = 'Normal'
 
 #—————————————————————————————————————————————————————————————————————————  7Zip
 $wc.DownloadFile($7z_uri, "$dl_path/$7z_file")
@@ -86,27 +90,33 @@ $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
 
 #————————————————————————————————————————————————————————————  bison, gperf, sed
-# updated 2018-10-01
-$files = "msys2-runtime-2.11.1-2-x86_64.pkg.tar",
-         "gcc-libs-7.3.0-3-x86_64.pkg.tar",
-         "libintl-0.19.8.1-1-x86_64.pkg.tar",
-         "libiconv-1.15-1-x86_64.pkg.tar",
-         "bash-4.4.019-3-x86_64.pkg.tar",
-         "bison-3.0.5-1-x86_64.pkg.tar",
-         "gperf-3.1-1-x86_64.pkg.tar",
-         "m4-1.4.18-2-x86_64.pkg.tar",
-         "sed-4.5-1-x86_64.pkg.tar"
+# updated 2018-10-01, some needed for build, some needed for
+# test-spec
+$files = "msys2-runtime-2.11.1-2",
+         "gcc-libs-7.3.0-3",
+         "libintl-0.19.8.1-1",
+         "libiconv-1.15-1",
+         "coreutils-8.30-1",
+         "bash-4.4.019-3",
+         "bison-3.0.5-1",
+         "gmp-6.1.2-1",
+         "gperf-3.1-1",
+         "m4-1.4.18-2",
+         "patch-2.7.6-1",
+         "sed-4.5-1"
 
 $dir1 = "-o$dl_path"
 $dir2 = "-o$drv\msys64"
+$suf  = "-x86_64.pkg.tar"
 
 foreach ($file in $files) {
-  $fp = "$dl_path\$file" + ".xz"
-  $uri = "$msys2_uri/$file" + ".xz"
+  $fn = "$file$suf"
+  $fp = "$dl_path\$fn"    + ".xz"
+  $uri = "$msys2_uri/$fn" + ".xz"
   $wc.DownloadFile($uri, $fp)
   Write-Host "Processing $file"
   7z.exe x $fp $dir1 1> $null
-  $fp = "$dl_path/$file"
+  $fp = "$dl_path/$fn"
   7z.exe x $fp $dir2 -ttar -aoa 1> $null
 }
 
@@ -118,10 +128,16 @@ Expand-Archive -Path $file -DestinationPath $dir
 
 $env:path = $path
 
-#————————————————————————————————————————————————————————————————————————  Setup
+#——————————————————————————————————————————————————  Setup Job Variables & State
+
+$platform = $env:Platform + "-mswin_" + $env:vs
+New-Item  -Path $src\$platform -ItemType Directory 1> $null
 
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
+
+# set variable BUILD
+echo "##vso[task.setvariable variable=BUILD]$src\$platform"
 
 # set variable BUILD_PATH used in each step
 $t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
@@ -130,6 +146,10 @@ echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
 New-Item -Path $drv\git -ItemType Junction -Value $env:ProgramFiles\Git 1> $null
 echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
+
+# set variable INSTALL_PATH
+$t = "\usr\bin;\usr\local\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+echo "##vso[task.setvariable variable=INSTALL_PATH]$t"
 
 # set variable JOBS
 echo "##vso[task.setvariable variable=JOBS]$env:NUMBER_OF_PROCESSORS"
@@ -142,6 +162,9 @@ echo "##vso[task.setvariable variable=SRC]$src"
 
 # set variable TMPDIR
 echo "##vso[task.setvariable variable=TMPDIR]$tmpdir"
+
+# set variable TMPDIR_W
+echo "##vso[task.setvariable variable=TMPDIR_W]$tmpdir_w"
 
 # set variable VC_VARS to the bat file
 echo "##vso[task.setvariable variable=VC_VARS]$VSCOMNTOOLS"

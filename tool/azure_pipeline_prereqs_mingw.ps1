@@ -33,6 +33,12 @@ $dl_path = "$drv\prereq"
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
 
+# make a temp folder on $drv
+$tmpdir_w = "$drv\temp"
+$tmpdir   = "$drv/temp"
+New-Item  -Path $tmpdir_w -ItemType Directory 1> $null
+(Get-Item -Path $tmpdir_w).Attributes = 'Normal'
+
 #—————————————————————————————————————————————————————————————————————————  7Zip
 $wc.DownloadFile($7z_uri, "$dl_path/$7z_file")
 Expand-Archive -Path "$dl_path/$7z_file" -DestinationPath "$drv/7zip"
@@ -92,30 +98,33 @@ bash.exe -c `"pacman-key --init`"
 bash.exe -c `"pacman-key --populate msys2`"
 bash.exe -c `"pacman-key --refresh-keys`"
 
-Write-Host "------------------------------------------------------------------  pacman.exe -Syu"
+$dash = "-"
+
+Write-Host "$($dash * 78)  pacman.exe -Syu"
 try   { pacman.exe -Syu --noconfirm --needed --noprogressbar 2> $null } catch {}
-Write-Host "------------------------------------------------------------------  pacman.exe -Su #1"
+Write-Host "$($dash * 78)  pacman.exe -Su"
 try   { pacman.exe -Su  --noconfirm --needed --noprogressbar 2> $null } catch {}
-
-Write-Host "------------------------------------------------------------------  pacman.exe -S base-devel"
-try   { pacman.exe -S --noconfirm --needed --noprogressbar base-devel 2> $null }
+Write-Host "$($dash * 78)  pacman.exe -S base-devel"
+try   { pacman.exe -S   --noconfirm --needed --noprogressbar base-devel 2> $null }
 catch {}
-Write-Host "------------------------------------------------------------------  pacman.exe -S toolchain"
-try   { pacman.exe -S --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null }
+Write-Host "$($dash * 78)  pacman.exe -S toolchain"
+try   { pacman.exe -S   --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null }
 catch {}
-Write-Host "------------------------------------------------------------------  pacman.exe -S ruby depends"
-try   { pacman.exe -S --noconfirm --needed --noprogressbar $tools.split(' ') 2> $null }
+Write-Host "$($dash * 78)  pacman.exe -S ruby depends"
+try   { pacman.exe -S   --noconfirm --needed --noprogressbar $tools.split(' ') 2> $null }
 catch {}
-
-# $t = $pre + "libffi" ; pacman -Rdd --noconfirm $t
-# $t = $pre + "zlib"   ; pacman -Rdd --noconfirm $t
 
 $env:path = $path
 
-#——————————————————————————————————————————————————————————  Setup Job Variables
+#——————————————————————————————————————————————————  Setup Job Variables & State
 
 # set variable BASERUBY
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
+
+# set variable BUILD
+New-Item  -Path $src\..\build -ItemType Directory 1> $null
+$t = (Resolve-Path -LiteralPath $src\..\build).tostring()
+echo "##vso[task.setvariable variable=BUILD]$t"
 
 # set variable BUILD_PATH used in each step
 $t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
@@ -127,6 +136,16 @@ echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
 
 # set variable CHOST
 echo "##vso[task.setvariable variable=CHOST]$chost"
+
+# set variable INSTALL
+New-Item -Path $src\..\install -ItemType Directory 1> $null
+$t = (Resolve-Path -LiteralPath $src\..\install).tostring()
+$tt = $t.replace('\', '/')
+echo "##vso[task.setvariable variable=INSTALL]$tt"
+
+# set variable INSTALL_PATH
+$t = "$t\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+echo "##vso[task.setvariable variable=INSTALL_PATH]$t"
 
 # set variable JOBS
 echo "##vso[task.setvariable variable=JOBS]$env:NUMBER_OF_PROCESSORS"
@@ -141,3 +160,20 @@ echo "##vso[task.setvariable variable=MSYSTEM]$t"
 # set variable SRC
 echo "##vso[task.setvariable variable=SRC]$src"
 
+# set variable TMPDIR
+echo "##vso[task.setvariable variable=TMPDIR]$tmpdir"
+
+# set variable TMPDIR_W
+echo "##vso[task.setvariable variable=TMPDIR_W]$tmpdir_w"
+
+#—————————————————————————————————————————————————— not sure if below are needed
+
+# below two items appear in MSYS2 shell printenv
+echo "##vso[task.setvariable variable=MSYSTEM_CARCH]$carch"
+echo "##vso[task.setvariable variable=MSYSTEM_CHOST]$chost"
+
+# not sure if below are needed, maybe just for makepkg scripts.  See
+# https://github.com/Alexpux/MSYS2-packages/blob/master/pacman/makepkg_mingw64.conf
+# https://github.com/Alexpux/MSYS2-packages/blob/master/pacman/makepkg_mingw32.conf
+echo "##vso[task.setvariable variable=CARCH]$carch"
+echo "##vso[task.setvariable variable=MINGW_PREFIX]/mingw$bits"

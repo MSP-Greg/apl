@@ -1,2 +1,3 @@
 *.txt
 local.ps1
+azure-pipelines_*.yml
