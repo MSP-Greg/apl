@@ -1,17 +1,23 @@
 <#
-azure_pipeline_prereqs_msys2.ps1
+azure_pipeline_prereqs_mingw.ps1
 Code by MSP-Greg
-Azure Pipeline mingw build 'Build variable' setup and prerequisite install items:
-7zip, msys2mingw system
+Azure Pipeline mingw build 'Build variable' setup and prerequisite items:
+ruby, 7zip, msys2/mingw system
 #>
 
-$cd   = $pwd
-$path = $env:path
-$src  = $env:BUILD_SOURCESDIRECTORY
+$cd      = $pwd
+$path    = $env:path
+$src     = $env:BUILD_SOURCESDIRECTORY
+$drv     = (get-location).Drive.Name + ":"
+$root    = [System.IO.Path]::GetFullPath("$src\..")
+$dl_path = "$root\prereq"
 
-$base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+$wc  = $(New-Object System.Net.WebClient)
 
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+
+$base_path = "$env:SystemRoot\system32;$env:SystemRoot;$env:SystemRoot\System32\Wbem"
 
 $7z_file = "7zip_ci.zip"
 $7z_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/7zip_ci.zip"
@@ -23,19 +29,12 @@ $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby
 $zlib_file = "zlib1211.zip"
 $zlib_uri  = "https://zlib.net/$zlib_file"
 
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-$wc  = $(New-Object System.Net.WebClient)
-
-$drv = (get-location).Drive.Name + ":"
-
-$dl_path = "$drv\prereq"
-
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
 
 # make a temp folder on $drv
-$tmpdir_w = "$drv\temp"
-$tmpdir   = "$drv/temp"
+$tmpdir_w = "$root\temp"
+$tmpdir   = "$root/temp"
 New-Item  -Path $tmpdir_w -ItemType Directory 1> $null
 (Get-Item -Path $tmpdir_w).Attributes = 'Normal'
 
@@ -104,8 +103,8 @@ Write-Host "$($dash * 78)  pacman.exe -Syu"
 try   { pacman.exe -Syu --noconfirm --needed --noprogressbar 2> $null } catch {}
 Write-Host "$($dash * 78)  pacman.exe -Su"
 try   { pacman.exe -Su  --noconfirm --needed --noprogressbar 2> $null } catch {}
-Write-Host "$($dash * 78)  pacman.exe -S base-devel"
-try   { pacman.exe -S   --noconfirm --needed --noprogressbar base-devel 2> $null }
+Write-Host "$($dash * 78)  pacman.exe -S base base-devel compression"
+try   { pacman.exe -S   --noconfirm --needed --noprogressbar base base-devel compression 2> $null }
 catch {}
 Write-Host "$($dash * 78)  pacman.exe -S toolchain"
 try   { pacman.exe -S   --noconfirm --needed --noprogressbar $($pre + 'toolchain') 2> $null }
@@ -122,12 +121,11 @@ $env:path = $path
 echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 
 # set variable BUILD
-New-Item  -Path $src\..\build -ItemType Directory 1> $null
-$t = (Resolve-Path -LiteralPath $src\..\build).tostring()
-echo "##vso[task.setvariable variable=BUILD]$t"
+New-Item  -Path $root\build -ItemType Directory 1> $null
+echo "##vso[task.setvariable variable=BUILD]$root\build"
 
 # set variable BUILD_PATH used in each step
-$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "$drv\ruby\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$base_path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
@@ -138,13 +136,12 @@ echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
 echo "##vso[task.setvariable variable=CHOST]$chost"
 
 # set variable INSTALL
-New-Item -Path $src\..\install -ItemType Directory 1> $null
-$t = (Resolve-Path -LiteralPath $src\..\install).tostring()
-$tt = $t.replace('\', '/')
+New-Item -Path $root\install -ItemType Directory 1> $null
+$tt = "$root\install".replace('\', '/')
 echo "##vso[task.setvariable variable=INSTALL]$tt"
 
 # set variable INSTALL_PATH
-$t = "$t\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "$root\install\bin;$drv\msys64\$mingw\bin;$drv\msys64\usr\bin;$drv\git\cmd;$base_path"
 echo "##vso[task.setvariable variable=INSTALL_PATH]$t"
 
 # set variable JOBS

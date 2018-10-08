@@ -1,13 +1,20 @@
+variables:          # build variables are set in azure_pipeline_prereqs_*.ps1
+  BASERUBY:         # full path to ruby.exe
+  BUILD:            # path to build folder, child of SRC for vc, sibling of SRC for mingw
+  BUILD_PATH:       # env PATH string for building (contains pre-installed Ruby)
+  GIT:              # full path to git.exe, uses 'no space' link
+  INSTALL:          # path to main install folder (not bin)
+  INSTALL_PATH:     # env PATH string with new Ruby, and no pre-installed Ruby
+  JOBS:             # NUMBER_OF_PROCESSORS
+  SRC:              # source/repo directory
+  TMPDIR:           # tmp folder on SRC drive slash
+  TMPDIR_W:         # tmp folder on SRC drive backslash
+
 jobs:
   - job: Ruby_mswin
-    variables:        # Build variables are set in azure_pipeline_prereqs_*.ps1
-      BASERUBY:       # full path to ruby.exe
-      BUILD_PATH:     # PATH string with prereqs added
-      GIT:            # full path to git.exe, uses 'no space' link
-      JOBS:           # NUMBER_OF_PROCESSORS
-      OPENSSL_DIR:    #
-      SRC:            # source/repo directory
-      VC_VARS:        # full path to correct vcvarsall.bat file
+    variables:      # Build variables are set in azure_pipeline_prereqs_*.ps1
+      OPENSSL_DIR:  #
+      VC_VARS:      # full path to correct vcvarsall.bat file
     timeoutInMinutes: 60
     pool:
       vmImage: vs2015-win2012r2
@@ -40,12 +47,73 @@ jobs:
         displayName: $(System.JobName) dir D:\msys64\bin
 
       - powershell: |
-          Write-Host $env:path.substring(0,100)
-          Write-Host "BASERUBY      $env:BASERUBY"
-          Write-Host "BUILD_PATH:  "$env:BUILD_PATH.substring(0,100)
+          Write-Host "BUILD:        $env:BUILD"
+          Write-Host "INSTALL:      $env:INSTALL"
+          Write-Host "SRC:          $env:SRC"
+          Write-Host
+          Write-Host "BUILD_PATH:   $env:BUILD_PATH"
+          Write-Host "INSTALL_PATH: $env:INSTALL_PATH"
+          Write-Host
+          Write-Host "BASERUBY:     $env:BASERUBY"
           Write-Host "GIT:          $env:GIT"
           Write-Host "JOBS:         $env:JOBS"
           Write-Host "OPENSSL_DIR:  $env:OPENSSL_DIR"
-          Write-Host "SRC:          $env:SRC"
           Write-Host "VC_VARS:      $env:VC_VARS"
         displayName: $(System.JobName) build variables
+
+  - job: Ruby_mingw
+    variables:      # Build variables are set in azure_pipeline_prereqs_mingw.ps1
+      CHOST:        # x86_64-w64-mingw32 or i686-w64-mingw32
+      MARCH:        # x86-64 or i686
+      MSYSTEM:      # MINGW64 or MINGW32
+      MSYSTEM_CARCH: # this and below are used in makepkg, not sure if all needed
+      MSYSTEM_CHOST:
+      CARCH:
+      MINGW_PREFIX:
+    timeoutInMinutes: 60
+    pool:
+      vmImage: vs2015-win2012r2
+    strategy:
+      maxParallel: 5
+      matrix:
+        x64-mingw32:
+          platform: x64
+    steps:
+      - powershell: ./tool/azure_pipeline_prereqs_mingw.ps1
+        displayName: $(System.JobName) install prerequisites
+        continueOnError: true
+
+      - script: |
+          call "%VC_VARS%" %VCVARS_PLATFORM%
+          set
+        displayName: $(System.JobName) set
+
+      - script: dir "%ProgramFiles%"
+        displayName: $(System.JobName) ProgramFiles
+        
+      - script: dir "%ProgramFiles(x86)%"
+        displayName: $(System.JobName) ProgramFiles(x86)
+
+      - script: dir D:\msys64\usr\bin
+        displayName: $(System.JobName) dir D:\msys64\bin
+
+      - powershell: |
+          Write-Host "BUILD:        $env:BUILD"
+          Write-Host "INSTALL:      $env:INSTALL"
+          Write-Host "SRC:          $env:SRC"
+          Write-Host
+          Write-Host "BUILD_PATH:   $env:BUILD_PATH"
+          Write-Host "INSTALL_PATH: $env:INSTALL_PATH"
+          Write-Host
+          Write-Host "BASERUBY      $env:BASERUBY"
+          Write-Host "GIT:          $env:GIT"
+          Write-Host "JOBS:         $env:JOBS"
+        displayName: $(System.JobName) build variables
+
+      - powershell: |
+          $env:path = $env:BUILD_PATH
+          Write-Host "git    $(where.exe git)"
+          Write-Host "ruby   $(where.exe ruby)"
+          Write-Host "make   $(where.exe make)"
+          Write-Host "sed    $(where.exe sed)"
+        displayName: $(System.JobName) where

@@ -1,7 +1,8 @@
 <#
+azure_pipeline_prereqs_vc.ps1
 Code by MSP-Greg
-Azure Pipeline vc build 'Build variable' setup and prerequisite install items:
-7zip, OpenSSL, zlib, bison, gperf, and sed
+Azure Pipeline vc build 'Build variable' setup and prerequisite items:
+ruby, 7zip, msys2/mingw system
 #>
 
 #—————————————————————————————————————————————————————————  Check for VC version
@@ -15,21 +16,22 @@ if ( !(Test-Path -Path $VSCOMNTOOLS -PathType Leaf) ) {
   exit 1
 }
 
-$cd   = $pwd
-$path = $env:path
-$src  = $env:BUILD_SOURCESDIRECTORY
+$cd      = $pwd
+$path    = $env:path
+$src     = $env:BUILD_SOURCESDIRECTORY
+$drv     = (get-location).Drive.Name + ":"
+$root    = [System.IO.Path]::GetFullPath("$src\..")
+$dl_path = "$root\prereq"
 
-$base_path = "C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem"
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+$wc  = $(New-Object System.Net.WebClient)
 
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
+$base_path = "$env:SystemRoot\system32;$env:SystemRoot;$env:SystemRoot\System32\Wbem"
+
 $7z_file = "7zip_ci.zip"
 $7z_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/7zip_ci.zip"
-
-$vs = $env:vs.substring(0,2)
-
-$openssl_file = "openssl-1.1.1_vc$vs" + ".7z"
-$openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_file"
 
 $ruby_base = "rubyinstaller-2.5.1-2"
 $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby_base/$ruby_base-x64.7z"
@@ -37,6 +39,12 @@ $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby
 # zip version has no dots in version
 $zlib_file = "zlib1211.zip"
 $zlib_uri  = "https://zlib.net/$zlib_file"
+
+$vs = $env:vs.substring(0,2)
+
+$openssl_file = "openssl-1.1.1_vc$vs" + ".7z"
+$openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_file"
+
 
 # problems with sf, don't know how to open one connection and download multiple
 # files with PS.  Might not help anyway...
@@ -47,15 +55,10 @@ $msys2_uri  = "http://repo.msys2.org/msys/x86_64"
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $wc  = $(New-Object System.Net.WebClient)
 
-$drv = (get-location).Drive.Name + ":"
-
 $dl_path = "$drv/prereq"
 
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
-
-
-
 
 # make a temp folder on $drv
 $tmpdir_w = "$drv\temp"
@@ -90,35 +93,39 @@ $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
 
 #————————————————————————————————————————————————————————————  bison, gperf, sed
-# updated 2018-10-01, some needed for build, some needed for
-# test-spec
-$files = "msys2-runtime-2.11.1-2",
-         "gcc-libs-7.3.0-3",
-         "libintl-0.19.8.1-1",
-         "libiconv-1.15-1",
-         "coreutils-8.30-1",
-         "bash-4.4.019-3",
-         "bison-3.0.5-1",
-         "gmp-6.1.2-1",
-         "gperf-3.1-1",
-         "m4-1.4.18-2",
-         "patch-2.7.6-1",
-         "sed-4.5-1"
+# updated 2018-10-01
+$file      = "msys2-base-x86_64-20180531.tar"
+$msys2_uri = "http://repo.msys2.org/distrib/x86_64"
 
 $dir1 = "-o$dl_path"
 $dir2 = "-o$drv\msys64"
-$suf  = "-x86_64.pkg.tar"
 
-foreach ($file in $files) {
-  $fn = "$file$suf"
-  $fp = "$dl_path\$fn"    + ".xz"
-  $uri = "$msys2_uri/$fn" + ".xz"
-  $wc.DownloadFile($uri, $fp)
-  Write-Host "Processing $file"
-  7z.exe x $fp $dir1 1> $null
-  $fp = "$dl_path/$fn"
-  7z.exe x $fp $dir2 -ttar -aoa 1> $null
-}
+Write-Host "Downloading $file"
+$fp = "$dl_path\$file" + ".xz"
+$uri = "$msys2_uri/$file" + ".xz"
+$wc.DownloadFile($uri, $fp)
+Write-Host "Processing $file"
+7z.exe x $fp $dir1 1> $null
+$fp = "$dl_path/$file"
+$dir2 = "-o$drv"
+7z.exe x $fp $dir2 1> $null
+Remove-Item $dl_path\*.*
+
+$env:path =  "$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$base_path"
+
+bash.exe -c `"pacman-key --init`"
+bash.exe -c `"pacman-key --populate msys2`"
+bash.exe -c `"pacman-key --refresh-keys`"
+
+$dash = "-"
+
+Write-Host "$($dash * 78)  pacman.exe -Syu"
+try   { pacman.exe -Syu --noconfirm --needed --noprogressbar 2> $null } catch {}
+Write-Host "$($dash * 78)  pacman.exe -Su"
+try   { pacman.exe -Su  --noconfirm --needed --noprogressbar 2> $null } catch {}
+Write-Host "$($dash * 38)  pacman.exe -S base bison compression gperf m4 patch"
+try   { pacman.exe -S   --noconfirm --needed --noprogressbar base bison compression gperf m4 patch 2> $null }
+catch {}
 
 #—————————————————————————————————————————————————————————————————————————  zlib
 $file = "$dl_path/$zlib_file"
@@ -140,7 +147,7 @@ echo "##vso[task.setvariable variable=BASERUBY]$drv/ruby/bin/ruby.exe"
 echo "##vso[task.setvariable variable=BUILD]$src\$platform"
 
 # set variable BUILD_PATH used in each step
-$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "\usr\local\bin;$drv\ruby\bin;$drv\msys64\usr\bin;$drv\git\cmd;$base_path"
 echo "##vso[task.setvariable variable=BUILD_PATH]$t"
 
 # set variable GIT pointing to the exe, RubyGems tests use it (path with no space)
@@ -148,7 +155,7 @@ New-Item -Path $drv\git -ItemType Junction -Value $env:ProgramFiles\Git 1> $null
 echo "##vso[task.setvariable variable=GIT]$drv/git/cmd/git.exe"
 
 # set variable INSTALL_PATH
-$t = "\usr\bin;\usr\local\bin;$drv\msys64\usr\bin;$drv\git\cmd;$env:path"
+$t = "\usr\bin;\usr\local\bin;$drv\msys64\usr\bin;$drv\git\cmd;$base_path"
 echo "##vso[task.setvariable variable=INSTALL_PATH]$t"
 
 # set variable JOBS
