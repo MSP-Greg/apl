@@ -11,26 +11,61 @@ variables:          # build variables are set in azure_pipeline_prereqs_*.ps1
   TMPDIR_W:         # tmp folder on SRC drive backslash
 
 jobs:
-  - job: Ruby_mswin
+  - job: Ruby_vc120
     variables:      # Build variables are set in azure_pipeline_prereqs_*.ps1
       OPENSSL_DIR:  #
       VC_VARS:      # full path to correct vcvarsall.bat file
-    timeoutInMinutes: 60
-    strategy:
-      maxParallel: 5
-      matrix:
-        vc12-x64:
-          vs: 120
-          VCVARS_PLATFORM: amd64
-          Platform: x64
-          pool:
-            vmImage: 'vs2015-win2012r2'
-        vc14-x64:
-          vs: 140
-          VCVARS_PLATFORM: amd64
-          Platform: x64
-          pool:
-            vmImage: 'vs2017-win2016'
+      vs: 120
+      VCVARS_PLATFORM: amd64
+      Platform: x64
+    pool:
+      vmImage: 'vs2015-win2012r2'
+
+    steps:
+      - powershell: type $env:USERPROFILE\.gitconfig
+        displayName: $(System.JobName) .gitconfig
+        continueOnError: true
+
+      - powershell: |
+          ./tool/azure_pipeline_prereqs_vc.ps1
+          Write-Host "---------------------------------------------------------- ENV"
+          Get-ChildItem env:
+        displayName: $(System.JobName) install prerequisites & set
+
+      - script: dir "%ProgramFiles%"
+        displayName: $(System.JobName) ProgramFiles
+        
+      - script: dir "%ProgramFiles(x86)%"
+        displayName: $(System.JobName) ProgramFiles(x86)
+
+      - script: dir D:\msys64\usr\bin
+        displayName: $(System.JobName) dir D:\msys64\bin
+
+      - powershell: |
+          Write-Host "BUILD:        $env:BUILD"
+          Write-Host "INSTALL:      $env:INSTALL"
+          Write-Host "SRC:          $env:SRC"
+          Write-Host
+          Write-Host "BUILD_PATH:   $env:BUILD_PATH"
+          Write-Host "INSTALL_PATH: $env:INSTALL_PATH"
+          Write-Host
+          Write-Host "BASERUBY:     $env:BASERUBY"
+          Write-Host "GIT:          $env:GIT"
+          Write-Host "JOBS:         $env:JOBS"
+          Write-Host "OPENSSL_DIR:  $env:OPENSSL_DIR"
+          Write-Host "VC_VARS:      $env:VC_VARS"
+        displayName: $(System.JobName) build variables
+
+  - job: Ruby_vc140
+    variables:      # Build variables are set in azure_pipeline_prereqs_*.ps1
+      OPENSSL_DIR:  #
+      VC_VARS:      # full path to correct vcvarsall.bat file
+      vs: 140
+      VCVARS_PLATFORM: amd64
+      Platform: x64
+    pool:
+      vmImage: 'vs2017-win2016'
+
     steps:
       - powershell: type $env:USERPROFILE\.gitconfig
         displayName: $(System.JobName) .gitconfig
