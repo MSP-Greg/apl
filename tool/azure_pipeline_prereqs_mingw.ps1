@@ -58,7 +58,7 @@ ruby -v
 #—————————————————————————————————————————————————————————————————————————  zlib
 $file = "$dl_path\$zlib_file"
 $wc.DownloadFile($zlib_uri, $file)
-# GJL $dir = "-o$src\ext\zlib"
+# $dir = "-o$src\ext\zlib"
 # Expand-Archive -Path $file -DestinationPath $dir
 
 #——————————————————————————————————————————————————————————————————  MSYS2/MinGW

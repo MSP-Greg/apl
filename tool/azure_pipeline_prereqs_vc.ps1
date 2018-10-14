@@ -40,46 +40,25 @@ $ruby_uri  = "https://github.com/oneclick/rubyinstaller2/releases/download/$ruby
 $zlib_file = "zlib1211.zip"
 $zlib_uri  = "https://zlib.net/$zlib_file"
 
-$vs = $env:vs.substring(0,2)
-
-$openssl_file = "openssl-1.1.1_vc$vs" + ".7z"
-$openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_file"
-
-
-# problems with sf, don't know how to open one connection and download multiple
-# files with PS.  Might not help anyway...
-$msys2_uri  = "https://sourceforge.net/projects/msys2/files/REPOS/MSYS2/x86_64"
-$msys2_uri  = "http://repo.msys2.org/msys/x86_64"
-
-
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-$wc  = $(New-Object System.Net.WebClient)
-
-$dl_path = "$drv/prereq"
-
 # put all downloaded items in this folder
 New-Item -Path $dl_path -ItemType Directory 1> $null
 
 # make a temp folder on $drv
-$tmpdir_w = "$drv\temp"
-$tmpdir   = "$drv/temp"
+$tmpdir_w = "$root\temp"
+$tmpdir   = "$root/temp"
 New-Item  -Path $tmpdir_w -ItemType Directory 1> $null
 (Get-Item -Path $tmpdir_w).Attributes = 'Normal'
+
+$vs = $env:vs.substring(0,2)
+
+$openssl_file = "openssl-1.1.1_vc$vs" + ".7z"
+$openssl_uri  = "https://dl.bintray.com/msp-greg/VC-OpenSSL/$openssl_file"
 
 #—————————————————————————————————————————————————————————————————————————  7Zip
 $wc.DownloadFile($7z_uri, "$dl_path/$7z_file")
 Expand-Archive -Path "$dl_path/$7z_file" -DestinationPath "$drv/7zip"
 $env:path = "$drv/7zip;$base_path"
 Write-Host "7zip installed"
-
-#——————————————————————————————————————————————————————————————————————  OpenSSL
-$fp = "$dl_path/$openssl_file"
-$wc.DownloadFile($openssl_uri, $fp)
-$dir = "-o$drv\openssl"
-7z.exe x $fp $dir 1> $null
-Write-Host "OpenSSL installed"
-$env:path = "$drv/openssl/bin;$env:path"
-openssl.exe version
 
 #—————————————————————————————————————————————————————————————————————————  Ruby
 $fp = "$dl_path/$ruby_base-x64.7z"
@@ -91,6 +70,21 @@ $env:ruby_path = "$drv\ruby"
 Write-Host "Ruby installed"
 $env:path = "$drv/ruby/bin;$env:path"
 ruby -v
+
+#—————————————————————————————————————————————————————————————————————————  zlib
+$file = "$dl_path/$zlib_file"
+$wc.DownloadFile($zlib_uri, $file)
+$dir = "$src\ext\zlib"
+Expand-Archive -Path $file -DestinationPath $dir
+
+#——————————————————————————————————————————————————————————————————————  OpenSSL
+$fp = "$dl_path/$openssl_file"
+$wc.DownloadFile($openssl_uri, $fp)
+$dir = "-o$drv\openssl"
+7z.exe x $fp $dir 1> $null
+Write-Host "OpenSSL installed"
+$env:path = "$drv/openssl/bin;$env:path"
+openssl.exe version
 
 #————————————————————————————————————————————————————————————  bison, gperf, sed
 # updated 2018-10-01
@@ -126,14 +120,6 @@ try   { pacman.exe -Su  --noconfirm --needed --noprogressbar 2> $null } catch {}
 Write-Host "$($dash * 38)  pacman.exe -S base bison compression gperf m4 patch"
 try   { pacman.exe -S   --noconfirm --needed --noprogressbar base bison compression gperf m4 patch 2> $null }
 catch {}
-
-#—————————————————————————————————————————————————————————————————————————  zlib
-$file = "$dl_path/$zlib_file"
-$wc.DownloadFile($zlib_uri, $file)
-$dir = "$src\ext\zlib"
-Expand-Archive -Path $file -DestinationPath $dir
-
-$env:path = $path
 
 #——————————————————————————————————————————————————  Setup Job Variables & State
 

@@ -16,8 +16,6 @@ jobs:
       OPENSSL_DIR:  #
       VC_VARS:      # full path to correct vcvarsall.bat file
     timeoutInMinutes: 60
-    pool:
-      vmImage: vs2015-win2012r2
     strategy:
       maxParallel: 5
       matrix:
@@ -25,17 +23,24 @@ jobs:
           vs: 120
           VCVARS_PLATFORM: amd64
           Platform: x64
+          pool:
+            vmImage: vs2015-win2012r2
         vc14-x64:
           vs: 140
           VCVARS_PLATFORM: amd64
           Platform: x64
+          pool:
+            vmImage: vs2017-win2016
     steps:
-      - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(System.JobName) install prerequisites
+      - powershell: type $env:USERPROFILE\.gitconfig
+        displayName: $(System.JobName) .gitconfig
         continueOnError: true
 
-      - script: set
-        displayName: $(System.JobName) set
+      - powershell: |
+          ./tool/azure_pipeline_prereqs_vc.ps1
+          Write-Host "---------------------------------------------------------- ENV"
+          Get-ChildItem env:
+        displayName: $(System.JobName) install prerequisites & set
 
       - script: dir "%ProgramFiles%"
         displayName: $(System.JobName) ProgramFiles
