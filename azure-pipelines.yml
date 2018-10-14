@@ -24,13 +24,13 @@ jobs:
           VCVARS_PLATFORM: amd64
           Platform: x64
           pool:
-            vmImage: vs2015-win2012r2
+            vmImage: 'vs2015-win2012r2'
         vc14-x64:
           vs: 140
           VCVARS_PLATFORM: amd64
           Platform: x64
           pool:
-            vmImage: vs2017-win2016
+            vmImage: 'vs2017-win2016'
     steps:
       - powershell: type $env:USERPROFILE\.gitconfig
         displayName: $(System.JobName) .gitconfig
