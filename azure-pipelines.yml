@@ -22,14 +22,14 @@ jobs:
       vmImage: 'vs2015-win2012r2'
 
     steps:
-      - powershell: git config --list
+      - script: git config --list
         displayName: $(System.PhaseName) git config --list
         continueOnError: true
 
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
         displayName: $(System.PhaseName) install prerequisites
 
-      - powershell: Get-ChildItem env:
+      - script: set
         displayName: $(System.PhaseName) set
 
       - script: dir "%ProgramFiles%"
@@ -67,14 +67,14 @@ jobs:
       vmImage: 'vs2017-win2016'
 
     steps:
-      - powershell: git config --list
+      - script: git config --list
         displayName: $(System.PhaseName) git config --list
         continueOnError: true
 
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
         displayName: $(System.PhaseName) install prerequisites
 
-      - powershell: Get-ChildItem env:
+      - script: set
         displayName: $(System.PhaseName) set
 
       - script: dir "%ProgramFiles%"
