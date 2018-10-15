@@ -11,35 +11,44 @@ variables:          # build variables are set in azure_pipeline_prereqs_*.ps1
   TMPDIR_W:         # tmp folder on SRC drive backslash
 
 jobs:
-  - job: Ruby_vc120
+  - job: Ruby_mswin
     variables:      # Build variables are set in azure_pipeline_prereqs_*.ps1
       OPENSSL_DIR:  #
       VC_VARS:      # full path to correct vcvarsall.bat file
-      vs: 120
-      VCVARS_PLATFORM: amd64
-      Platform: x64
+    timeoutInMinutes: 60
+    strategy:
+      maxParallel: 5
+      matrix:
+        vc12-x64:
+          vs: 120
+          VCVARS_PLATFORM: amd64
+          Platform: x64
+          VM_Image: vs2015-win2012r2
+        vc14-x64:
+          vs: 140
+          VCVARS_PLATFORM: amd64
+          Platform: x64
+          VM_Image: vs2017-win2016
     pool:
-      vmImage: 'vs2015-win2012r2'
-
+      vmImage: $(VM_Image)
     steps:
-      - script: git config --list
-        displayName: $(System.PhaseName) git config --list
+      - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
+        displayName: $(System.JobName) install prerequisites
         continueOnError: true
 
-      - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(System.PhaseName) install prerequisites
-
-      - script: set
-        displayName: $(System.PhaseName) set
+      - script: |
+          call "%VC_VARS%" %VCVARS_PLATFORM%
+          set
+        displayName: $(System.JobName) set
 
       - script: dir "%ProgramFiles%"
-        displayName: $(System.PhaseName) ProgramFiles
+        displayName: $(System.JobName) ProgramFiles
         
       - script: dir "%ProgramFiles(x86)%"
-        displayName: $(System.PhaseName) ProgramFiles(x86)
+        displayName: $(System.JobName) ProgramFiles(x86)
 
       - script: dir D:\msys64\usr\bin
-        displayName: $(System.PhaseName) dir D:\msys64\bin
+        displayName: $(System.JobName) dir D:\msys64\bin
 
       - powershell: |
           Write-Host "BUILD:        $env:BUILD"
@@ -54,52 +63,7 @@ jobs:
           Write-Host "JOBS:         $env:JOBS"
           Write-Host "OPENSSL_DIR:  $env:OPENSSL_DIR"
           Write-Host "VC_VARS:      $env:VC_VARS"
-        displayName: $(System.PhaseName) build variables
-
-  - job: Ruby_vc140
-    variables:      # Build variables are set in azure_pipeline_prereqs_*.ps1
-      OPENSSL_DIR:  #
-      VC_VARS:      # full path to correct vcvarsall.bat file
-      vs: 140
-      VCVARS_PLATFORM: amd64
-      Platform: x64
-    pool:
-      vmImage: 'vs2017-win2016'
-
-    steps:
-      - script: git config --list
-        displayName: $(System.PhaseName) git config --list
-        continueOnError: true
-
-      - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
-        displayName: $(System.PhaseName) install prerequisites
-
-      - script: set
-        displayName: $(System.PhaseName) set
-
-      - script: dir "%ProgramFiles%"
-        displayName: $(System.PhaseName) ProgramFiles
-        
-      - script: dir "%ProgramFiles(x86)%"
-        displayName: $(System.PhaseName) ProgramFiles(x86)
-
-      - script: dir D:\msys64\usr\bin
-        displayName: $(System.PhaseName) dir D:\msys64\bin
-
-      - powershell: |
-          Write-Host "BUILD:        $env:BUILD"
-          Write-Host "INSTALL:      $env:INSTALL"
-          Write-Host "SRC:          $env:SRC"
-          Write-Host
-          Write-Host "BUILD_PATH:   $env:BUILD_PATH"
-          Write-Host "INSTALL_PATH: $env:INSTALL_PATH"
-          Write-Host
-          Write-Host "BASERUBY:     $env:BASERUBY"
-          Write-Host "GIT:          $env:GIT"
-          Write-Host "JOBS:         $env:JOBS"
-          Write-Host "OPENSSL_DIR:  $env:OPENSSL_DIR"
-          Write-Host "VC_VARS:      $env:VC_VARS"
-        displayName: $(System.PhaseName) build variables
+        displayName: $(System.JobName) build variables
 
   - job: Ruby_mingw
     variables:      # Build variables are set in azure_pipeline_prereqs_mingw.ps1
@@ -120,22 +84,20 @@ jobs:
           platform: x64
     steps:
       - powershell: ./tool/azure_pipeline_prereqs_mingw.ps1
-        displayName: $(System.PhaseName) install prerequisites
+        displayName: $(System.JobName) install prerequisites
         continueOnError: true
 
-      - script: |
-          call "%VC_VARS%" %VCVARS_PLATFORM%
-          set
-        displayName: $(System.PhaseName) set
+      - script: set
+        displayName: $(System.JobName) set
 
       - script: dir "%ProgramFiles%"
-        displayName: $(System.PhaseName) ProgramFiles
+        displayName: $(System.JobName) ProgramFiles
         
       - script: dir "%ProgramFiles(x86)%"
-        displayName: $(System.PhaseName) ProgramFiles(x86)
+        displayName: $(System.JobName) ProgramFiles(x86)
 
       - script: dir D:\msys64\usr\bin
-        displayName: $(System.PhaseName) dir D:\msys64\bin
+        displayName: $(System.JobName) dir D:\msys64\bin
 
       - powershell: |
           Write-Host "BUILD:        $env:BUILD"
@@ -148,7 +110,7 @@ jobs:
           Write-Host "BASERUBY      $env:BASERUBY"
           Write-Host "GIT:          $env:GIT"
           Write-Host "JOBS:         $env:JOBS"
-        displayName: $(System.PhaseName) build variables
+        displayName: $(System.JobName) build variables
 
       - powershell: |
           $env:path = $env:BUILD_PATH
@@ -156,4 +118,4 @@ jobs:
           Write-Host "ruby   $(where.exe ruby)"
           Write-Host "make   $(where.exe make)"
           Write-Host "sed    $(where.exe sed)"
-        displayName: $(System.PhaseName) where
+        displayName: $(System.JobName) where
