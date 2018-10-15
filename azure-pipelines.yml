@@ -17,7 +17,6 @@ jobs:
       VC_VARS:      # full path to correct vcvarsall.bat file
     timeoutInMinutes: 60
     strategy:
-      maxParallel: 5
       matrix:
         vc12-x64:
           vs: 120
@@ -30,8 +29,13 @@ jobs:
           Platform: x64
           VM_Image: vs2017-win2016
     pool:
-      vmImage: $(VM_Image)
+      vmImage: vs2015-win2012r2
     steps:
+      - powershell: |
+          Write-Host "VM_Image     "$(VM_Image)
+          Write-Host "VM_Image env "$env:VM_Image
+        displayName: $(System.JobName) VM_Image $(VM_Image)
+        
       - powershell: ./tool/azure_pipeline_prereqs_vc.ps1
         displayName: $(System.JobName) install prerequisites
         continueOnError: true
